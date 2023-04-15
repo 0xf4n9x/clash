@@ -1,9 +1,11 @@
 package constant
 
 import (
+	"fmt"
 	"os"
 	P "path"
 	"path/filepath"
+	"strings"
 )
 
 const Name = "clash"
@@ -44,11 +46,26 @@ func (p *path) Config() string {
 
 // Resolve return a absolute path or a relative path with homedir
 func (p *path) Resolve(path string) string {
-	if !filepath.IsAbs(path) {
-		return filepath.Join(p.HomeDir(), path)
+	// Clean path
+	cleanedPath := filepath.Clean(path)
+
+	// Splicing path with p.HomeDir()
+	joinedPath := filepath.Join(p.HomeDir(), cleanedPath)
+
+	// Get the absolute path of the joinedPath
+	absPath, err := filepath.Abs(joinedPath)
+	if err != nil {
+		fmt.Println("Error getting absolute path:", err)
+		return "NoAbsPath"
 	}
 
-	return path
+	// Check if the absPath is still in the p.HomeDir()
+	if !strings.HasPrefix(absPath, p.HomeDir()) {
+		fmt.Println("Path traversal attempt detected!")
+		return "PT"
+	}
+
+	return absPath
 }
 
 func (p *path) MMDB() string {

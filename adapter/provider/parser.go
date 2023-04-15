@@ -48,6 +48,12 @@ func ParseProxyProvider(name string, mapping map[string]any) (types.ProxyProvide
 
 	path := C.Path.Resolve(schema.Path)
 
+	if path == "NoAbsPath" {
+		return nil, fmt.Errorf("Absolute path not obtained")
+	} else if path == "PT" {
+		return nil, fmt.Errorf("Path traversal is happening")
+	}
+
 	var vehicle types.Vehicle
 	switch schema.Type {
 	case "file":
