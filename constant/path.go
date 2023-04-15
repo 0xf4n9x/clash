@@ -1,7 +1,6 @@
 package constant
 
 import (
-	"fmt"
 	"os"
 	P "path"
 	"path/filepath"
@@ -55,16 +54,17 @@ func (p *path) Resolve(path string) string {
 	// Get the absolute path of the joinedPath
 	absPath, err := filepath.Abs(joinedPath)
 	if err != nil {
-		fmt.Println("Error getting absolute path:", err)
+		// Error getting absolute path.
 		return "NoAbsPath"
 	}
 
 	// Check if the absPath is still in the p.HomeDir()
 	if !strings.HasPrefix(absPath, p.HomeDir()) {
-		fmt.Println("Path traversal attempt detected!")
+		// Path traversal is happening.
 		return "PT"
 	}
 
+	// Safe path
 	return absPath
 }
 
