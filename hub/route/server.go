@@ -37,7 +37,7 @@ type Traffic struct {
 }
 
 func SetUIPath(path string) {
-	uiPath = C.Path.Resolve(path)
+	uiPath, _ = C.Path.Resolve(path)
 }
 
 func Start(addr string, secret string) {

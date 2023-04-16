@@ -1,6 +1,7 @@
 package constant
 
 import (
+	"fmt"
 	"os"
 	P "path"
 	"path/filepath"
@@ -44,28 +45,23 @@ func (p *path) Config() string {
 }
 
 // Resolve return a absolute path or a relative path with homedir
-func (p *path) Resolve(path string) string {
-	// Clean path
-	cleanedPath := filepath.Clean(path)
+func (p *path) Resolve(path string) (string, error) {
+	if filepath.IsAbs(path) {
+		return "", fmt.Errorf("Absolute paths are not allowed")
+	}
 
-	// Splicing path with p.HomeDir()
-	joinedPath := filepath.Join(p.HomeDir(), cleanedPath)
-
-	// Get the absolute path of the joinedPath
-	absPath, err := filepath.Abs(joinedPath)
+	joinedPath := filepath.Join(p.HomeDir(), path)
+	cleanedPath := filepath.Clean(joinedPath)
+	absPath, err := filepath.Abs(cleanedPath)
 	if err != nil {
-		// Error getting absolute path.
-		return "NoAbsPath"
+		return "", fmt.Errorf("Error getting absolute path: %v", err)
 	}
 
-	// Check if the absPath is still in the p.HomeDir()
 	if !strings.HasPrefix(absPath, p.HomeDir()) {
-		// Path traversal is happening.
-		return "PT"
+		return "", fmt.Errorf("Path traversal attempt detected!")
 	}
 
-	// Safe path
-	return absPath
+	return absPath, nil
 }
 
 func (p *path) MMDB() string {

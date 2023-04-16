@@ -318,7 +318,10 @@ func parseGeneral(cfg *RawConfig) (*General, error) {
 
 	// checkout externalUI exist
 	if externalUI != "" {
-		externalUI = C.Path.Resolve(externalUI)
+		externalUI, err := C.Path.Resolve(externalUI)
+		if err != nil {
+			return nil, fmt.Errorf("Error resolving path:", err)
+		}
 
 		if _, err := os.Stat(externalUI); os.IsNotExist(err) {
 			return nil, fmt.Errorf("external-ui: %s not exist", externalUI)
