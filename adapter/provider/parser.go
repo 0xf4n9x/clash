@@ -10,7 +10,10 @@ import (
 	types "github.com/Dreamacro/clash/constant/provider"
 )
 
-var errVehicleType = errors.New("unsupport vehicle type")
+var (
+	errVehicleType = errors.New("unsupport vehicle type")
+	errSubPath     = errors.New("path is not subpath of home directory")
+)
 
 type healthCheckSchema struct {
 	Enable   bool   `provider:"enable"`
@@ -46,16 +49,16 @@ func ParseProxyProvider(name string, mapping map[string]any) (types.ProxyProvide
 	}
 	hc := NewHealthCheck([]C.Proxy{}, schema.HealthCheck.URL, hcInterval, schema.HealthCheck.Lazy)
 
-	path, err := C.Path.Resolve(schema.Path)
-	if err != nil {
-		return nil, fmt.Errorf("Error resolving path:", err)
-	}
+	path := C.Path.Resolve(schema.Path)
 
 	var vehicle types.Vehicle
 	switch schema.Type {
 	case "file":
 		vehicle = NewFileVehicle(path)
 	case "http":
+		if !C.Path.IsSubPath(path) {
+			return nil, fmt.Errorf("%w: %s", errSubPath, path)
+		}
 		vehicle = NewHTTPVehicle(schema.URL, path)
 	default:
 		return nil, fmt.Errorf("%w: %s", errVehicleType, schema.Type)
